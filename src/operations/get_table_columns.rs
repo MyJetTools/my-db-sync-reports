@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, time::Duration};
 
 use crate::{app::AppContext, db::TableColumn};
 
@@ -19,18 +19,39 @@ impl TableSchema {
 pub async fn get_table_schema(app: &AppContext, table_name: &str) -> Result<TableSchema, String> {
     let mut result = TableSchema::new();
     for (env, postgres) in &app.postgress {
-        let columns = postgres.get_columns(&table_name).await;
+        let columns =
+            tokio::time::timeout(Duration::from_secs(10), postgres.get_columns(&table_name)).await;
+
+        if let Err(_) = columns {
+            return Err(format!(
+                "Can not get columns data for env: {}. Timeout",
+                env
+            ));
+        }
+
+        let columns = columns.unwrap();
+
         if let Err(err) = columns {
             return Err(format!(
-                "Can not columns data for env{}. Err:{:?}",
+                "Can not columns data for env: {}. Err:{:?}",
                 env, err
             ));
         }
-        let indexes = postgres.get_indexes(&table_name).await;
+        let indexes =
+            tokio::time::timeout(Duration::from_secs(10), postgres.get_indexes(&table_name)).await;
+
+        if let Err(_) = indexes {
+            return Err(format!(
+                "Can not get indexes data for env: {}. Timeout",
+                env
+            ));
+        }
+
+        let indexes = indexes.unwrap();
 
         if let Err(err) = indexes {
             return Err(format!(
-                "Can not read indexes for env{}. Err:{:?}",
+                "Can not read indexes for env: {}. Err:{:?}",
                 env, err
             ));
         }

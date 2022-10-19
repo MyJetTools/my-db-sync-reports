@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, time::Duration};
 
 use crate::{app::AppContext, db::TableColumn};
 
@@ -38,22 +38,45 @@ pub async fn get_tables_difference(
         let handle = tokio::spawn(async move {
             let mut result = BTreeMap::new();
             for table_name in tables {
-                let columns = postgres_moved.get_columns(&table_name).await;
+                let columns = tokio::time::timeout(
+                    Duration::from_secs(10),
+                    postgres_moved.get_columns(&table_name),
+                )
+                .await;
+
+                if let Err(_) = columns {
+                    return Err(format!("Can not columns data for env: {}. Timeout", env));
+                }
+
+                let columns = columns.unwrap();
 
                 if let Err(err) = columns {
                     return Err(format!(
-                        "Can not columns data for env{}. Err:{:?}",
+                        "Can not columns data for env: {}. Err:{:?}",
                         env, err
                     ));
                 }
 
                 let columns = columns.unwrap();
 
-                let indexes = postgres_moved.get_indexes(&table_name).await;
+                let indexes = tokio::time::timeout(
+                    Duration::from_secs(10),
+                    postgres_moved.get_indexes(&table_name),
+                )
+                .await;
+
+                if let Err(_) = indexes {
+                    return Err(format!(
+                        "Can not get indexes data for env: {}. Timeout",
+                        env
+                    ));
+                }
+
+                let indexes = indexes.unwrap();
 
                 if let Err(err) = indexes {
                     return Err(format!(
-                        "Can not read indexes for env{}. Err:{:?}",
+                        "Can not read indexes for env: {}. Err:{:?}",
                         env, err
                     ));
                 }

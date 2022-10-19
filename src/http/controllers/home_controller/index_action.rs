@@ -75,13 +75,20 @@ async fn handle_request(
         for (env, _) in action.app.postgress.iter() {
             if let Some(columns) = table_info.columns.get(env) {
                 html.push_str("<td style=\"color:green\">Yes</td>");
+
                 html.push_str(format!("<td>{}</td>", columns.len()).as_str());
             } else {
                 html.push_str("<td style=\"color:red\">No</td><td>--</td>");
             }
 
             if let Some(indexes) = table_info.indexes.get(env) {
-                html.push_str(format!("<td>{}</td>", indexes.len()).as_str());
+                if indexes.len() == 0 {
+                    html.push_str(
+                        format!("<td style=\"color:red;\">{}</td>", indexes.len()).as_str(),
+                    );
+                } else {
+                    html.push_str(format!("<td>{}</td>", indexes.len()).as_str());
+                }
             } else {
                 html.push_str("<td>--</td>");
             }
