@@ -26,6 +26,12 @@ async fn handle_request(
 
     let tables = crate::operations::get_tables_difference(&action.app).await;
 
+    if let Err(err) = tables {
+        return HttpOutput::as_text(err).into_ok_result(false);
+    }
+
+    let tables = tables.unwrap();
+
     html.push_str(
         r###"<html><body><link rel="icon" type="image/x-icon" href="/img/{favicon_file_name}">
     <link href="/css/bootstrap.css" rel="stylesheet" type="text/css" />

@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, sync::Arc};
 
-use my_postgres::{MyPostgres, PostgressSettings};
+use my_postgres::{MyPostgres, MyPostgressError, PostgressSettings};
 
 use super::dto::*;
 
@@ -35,14 +35,13 @@ impl PostgresRepo {
         Self { postgress, schema }
     }
 
-    pub async fn get_list_of_tables(&self) -> Vec<String> {
+    pub async fn get_list_of_tables(&self) -> Result<Vec<String>, MyPostgressError> {
         let sql = "SELECT * FROM information_schema.tables where table_schema = $1";
 
         let response: Vec<TableNameDto> = self
             .postgress
             .query_rows(sql.to_string(), &[&self.schema])
-            .await
-            .unwrap();
+            .await?;
 
         let mut result = Vec::with_capacity(response.len());
 
@@ -53,18 +52,20 @@ impl PostgresRepo {
             result.push(item.table_name);
         }
 
-        result
+        Ok(result)
     }
 
-    pub async fn get_columns(&self, table_name: &str) -> BTreeMap<String, TableColumn> {
+    pub async fn get_columns(
+        &self,
+        table_name: &str,
+    ) -> Result<BTreeMap<String, TableColumn>, MyPostgressError> {
         let sql =
             "SELECT * FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2";
 
         let response: Vec<TableColumn> = self
             .postgress
             .query_rows(sql.to_string(), &[&self.schema, &table_name])
-            .await
-            .unwrap();
+            .await?;
 
         let mut result = BTreeMap::new();
 
@@ -72,10 +73,13 @@ impl PostgresRepo {
             result.insert(column.column_name.to_string(), column);
         }
 
-        result
+        Ok(result)
     }
 
-    pub async fn get_indexes(&self, table_name: &str) -> BTreeMap<String, String> {
+    pub async fn get_indexes(
+        &self,
+        table_name: &str,
+    ) -> Result<BTreeMap<String, String>, MyPostgressError> {
         let sql =
             "SELECT  \"indexname\", \"indexdef\" FROM pg_indexes WHERE schemaname = $1 AND tablename = $2";
 
@@ -91,6 +95,6 @@ impl PostgresRepo {
             result.insert(index.indexname, index.indexdef);
         }
 
-        result
+        Ok(result)
     }
 }

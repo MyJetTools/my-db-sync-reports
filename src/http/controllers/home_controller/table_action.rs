@@ -31,6 +31,12 @@ async fn handle_request(
     let table_scema =
         crate::operations::get_table_schema(&action.app, &input_data.table_name).await;
 
+    if let Err(err) = table_scema {
+        return HttpOutput::as_text(err).into_ok_result(false);
+    }
+
+    let table_scema = table_scema.unwrap();
+
     html.push_str(
         r###"<html><body><link rel="icon" type="image/x-icon" href="/img/{favicon_file_name}">
     <link href="/css/bootstrap.css" rel="stylesheet" type="text/css" />
