@@ -1,0 +1,41 @@
+[package]
+name = "my-db-sync-report"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+my-http-server = { tag = "0.3.0", git = "https://github.com/MyJetTools/my-http-server.git", features = [
+    "static_files",
+] }
+my-http-server-controllers = { tag = "0.3.0", git = "https://github.com/MyJetTools/my-http-server-controllers.git" }
+my-http-server-swagger = { tag = "0.3.0", git = "https://github.com/MyJetTools/my-http-server-swagger.git" }
+
+my-logger = { tag = "0.2.0", git = "https://github.com/MyJetTools/my-logger.git" }
+
+flurl = { tag = "0.2.3", git = "https://github.com/MyJetTools/fl-url.git" }
+
+my-settings-reader = { tag = "0.1.5", git = "https://github.com/MyJetTools/my-settings-reader.git", features = [
+    "background-reader",
+] }
+
+my-postgres-macros = { tag = "0.2.2", git = "https://github.com/MyJetTools/my-postgres-macros.git" }
+my-postgres = { tag = "0.2.3", git = "https://github.com/MyJetTools/my-postgres.git", features = [
+    "with-tls",
+] }
+
+rust-extensions = { tag = "0.1.2", git = "https://github.com/MyJetTools/rust-extensions.git" }
+
+
+async-trait = "*"
+tonic = { version = "*", features = ["tls", "tls-roots", "prost"] }
+anyhow = "*"
+tokio = { version = "*", features = ["full"] }
+tokio-postgres = { version = "*", features = ["with-chrono-0_4"] }
+hyper = { version = "*", features = ["full"] }
+prost = "*"
+serde = { version = "*", features = ["derive"] }
+serde_yaml = "*"
+tokio-util = "*"
+futures = "*"
