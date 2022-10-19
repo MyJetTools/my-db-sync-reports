@@ -84,7 +84,11 @@ async fn handle_request(
             if let Some(indexes) = table_info.indexes.get(env) {
                 if indexes.len() == 0 {
                     html.push_str(
-                        format!("<td style=\"color:red;\">{}</td>", indexes.len()).as_str(),
+                        format!(
+                            "<td style=\"background:red;color:white\"><b>{}</b></td>",
+                            indexes.len()
+                        )
+                        .as_str(),
                     );
                 } else {
                     html.push_str(format!("<td>{}</td>", indexes.len()).as_str());
